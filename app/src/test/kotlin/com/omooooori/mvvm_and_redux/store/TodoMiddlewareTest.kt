@@ -11,7 +11,6 @@ import io.mockk.mockk
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -23,7 +22,6 @@ class TodoMiddlewareTest : BehaviorSpec({
     val testDispatcher = StandardTestDispatcher()
     val testScope = CoroutineScope(testDispatcher)
     val repository = mockk<TodoRepository>()
-    val actionsFlow = MutableSharedFlow<TodoAction>()
     val middleware = TodoMiddleware(repository, testScope)
 
     beforeTest {
@@ -98,4 +96,4 @@ class TodoMiddlewareTest : BehaviorSpec({
             }
         }
     }
-}) 
+})

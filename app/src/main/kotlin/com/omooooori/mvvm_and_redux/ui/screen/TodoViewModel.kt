@@ -26,4 +26,4 @@ class TodoViewModel @Inject constructor(
     fun deleteTodo(id: Long) {
         store.dispatch(TodoAction.DeleteTodo(id))
     }
-} 
+}

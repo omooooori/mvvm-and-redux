@@ -41,4 +41,4 @@ class TodoMiddleware @Inject constructor(
     }
 
     fun observeTodos(): Flow<List<Todo>> = repository.getAllTodos()
-} 
+}

@@ -6,4 +6,4 @@ data class TodoState(
     val todos: List<Todo> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null
-) 
+)

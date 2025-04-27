@@ -8,4 +8,4 @@ sealed class TodoAction {
     data class SetTodos(val todos: List<Todo>) : TodoAction()
     data class SetLoading(val isLoading: Boolean) : TodoAction()
     data class SetError(val error: String?) : TodoAction()
-} 
+}

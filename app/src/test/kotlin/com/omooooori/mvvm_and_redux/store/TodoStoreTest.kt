@@ -113,4 +113,4 @@ class TodoStoreTest : BehaviorSpec({
             }
         }
     }
-}) 
+})

@@ -34,4 +34,4 @@ class TodoStore @Inject constructor(
     fun dispatch(action: TodoAction) {
         middleware.dispatch(action)
     }
-} 
+}

@@ -16,4 +16,4 @@ fun todoReducer(state: TodoState, action: TodoAction): TodoState = when (action)
     is TodoAction.SetError -> state.copy(
         error = action.error
     )
-} 
+}

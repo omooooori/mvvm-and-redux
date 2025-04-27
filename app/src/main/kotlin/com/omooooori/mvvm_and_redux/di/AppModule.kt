@@ -52,4 +52,4 @@ object AppModule {
         middleware: TodoMiddleware,
         coroutineScope: CoroutineScope
     ) = TodoStore(middleware, coroutineScope)
-} 
+}

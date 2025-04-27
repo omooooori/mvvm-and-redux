@@ -94,4 +94,4 @@ class TodoScreenTest {
         composeTestRule.onNodeWithTag("addTodoButton").performClick()
         composeTestRule.onNodeWithText("新しいTODOを追加").assertIsDisplayed()
     }
-} 
+}

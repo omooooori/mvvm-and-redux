@@ -11,49 +11,43 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 
 class TodoRepositoryTest : BehaviorSpec({
-    val todoDao = mockk<TodoDao>()
-    val repository = TodoRepository(todoDao)
+    val mockTodoDao = mockk<TodoDao>()
+    val repository = TodoRepository(mockTodoDao)
+
+    val testTodo = Todo(
+        id = 1,
+        title = "Test Todo",
+        description = "Test Description"
+    )
 
     Given("TodoRepository") {
-        val todo = Todo(
-            id = 1,
-            title = "Test Todo",
-            description = "Test Description"
-        )
-
         When("getAllTodosが呼ばれた時") {
-            val todos = listOf(todo)
-            coEvery { todoDao.getAllTodos() } returns flowOf(todos)
+            val expectedTodos = listOf(testTodo)
+            coEvery { mockTodoDao.getAllTodos() } returns flowOf(expectedTodos)
 
-            Then("正しいTodoリストが返される") {
-                runTest {
-                    repository.getAllTodos().collect { result ->
-                        result shouldBe todos
-                    }
+            Then("DaoのgetAllTodosが呼ばれ、正しい結果が返される") {
+                repository.getAllTodos().collect { todos ->
+                    todos shouldBe expectedTodos
                 }
-                coVerify { todoDao.getAllTodos() }
+                coVerify { mockTodoDao.getAllTodos() }
             }
         }
 
         When("addTodoが呼ばれた時") {
-            coEvery { todoDao.insertTodo(todo) } returns Unit
+            coEvery { mockTodoDao.insertTodo(testTodo) } returns Unit
 
-            Then("Todoが正しく追加される") {
-                runTest {
-                    repository.addTodo(todo)
-                    coVerify { todoDao.insertTodo(todo) }
-                }
+            Then("DaoのinsertTodoが呼ばれる") {
+                repository.addTodo(testTodo)
+                coVerify { mockTodoDao.insertTodo(testTodo) }
             }
         }
 
         When("deleteTodoが呼ばれた時") {
-            coEvery { todoDao.deleteTodo(1) } returns Unit
+            coEvery { mockTodoDao.deleteTodo(1L) } returns Unit
 
-            Then("Todoが正しく削除される") {
-                runTest {
-                    repository.deleteTodo(1)
-                    coVerify { todoDao.deleteTodo(1) }
-                }
+            Then("DaoのdeleteTodoが呼ばれる") {
+                repository.deleteTodo(1L)
+                coVerify { mockTodoDao.deleteTodo(1L) }
             }
         }
     }

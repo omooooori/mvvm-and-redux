@@ -20,6 +20,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -40,7 +41,8 @@ fun TodoListScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { showAddDialog = true }
+                onClick = { showAddDialog = true },
+                modifier = Modifier.testTag("addTodoButton")
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_add),
@@ -56,7 +58,9 @@ fun TodoListScreen(
         ) {
             if (state.value.isLoading) {
                 CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center)
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .testTag("loadingIndicator")
                 )
             } else {
                 LazyColumn {

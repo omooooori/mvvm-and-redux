@@ -1,5 +1,6 @@
 package com.omooooori.mvvm_and_redux.store
 
+import app.cash.turbine.test
 import com.omooooori.mvvm_and_redux.data.model.Todo
 import com.omooooori.mvvm_and_redux.data.repository.TodoRepository
 import io.kotest.core.spec.style.BehaviorSpec
@@ -7,17 +8,23 @@ import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 
+@ExperimentalCoroutinesApi
 class TodoMiddlewareTest : BehaviorSpec({
     val testDispatcher = StandardTestDispatcher()
+    val testScope = CoroutineScope(testDispatcher)
     val repository = mockk<TodoRepository>()
-    val middleware = TodoMiddleware(repository, testDispatcher)
+    val actionsFlow = MutableSharedFlow<TodoAction>()
+    val middleware = TodoMiddleware(repository, testScope)
 
     beforeTest {
         Dispatchers.setMain(testDispatcher)
@@ -64,12 +71,12 @@ class TodoMiddlewareTest : BehaviorSpec({
 
             Then("SetErrorアクションが発行される") {
                 runTest {
-                    middleware.dispatch(TodoAction.AddTodo(todo))
-                    testDispatcher.scheduler.advanceUntilIdle()
-                    middleware.actions.collect { action ->
-                        if (action is TodoAction.SetError) {
-                            action.error shouldBe error.message
-                        }
+                    middleware.actions.test {
+                        middleware.dispatch(TodoAction.AddTodo(todo))
+                        testDispatcher.scheduler.advanceUntilIdle()
+                        val action = awaitItem()
+                        action shouldBe TodoAction.SetError(error.message)
+                        cancelAndConsumeRemainingEvents()
                     }
                 }
             }
@@ -81,10 +88,12 @@ class TodoMiddlewareTest : BehaviorSpec({
 
             Then("リポジトリのgetAllTodosが呼ばれる") {
                 runTest {
-                    middleware.observeTodos().collect { result ->
+                    middleware.observeTodos().test {
+                        val result = awaitItem()
                         result shouldBe todos
+                        cancelAndConsumeRemainingEvents()
+                        coVerify { repository.getAllTodos() }
                     }
-                    coVerify { repository.getAllTodos() }
                 }
             }
         }

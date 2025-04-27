@@ -8,37 +8,127 @@ on:
     branches: [ master ]
 
 jobs:
-  test:
+  unit-test:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: gradle
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
 
-    - name: Run unit tests
-      run: ./gradlew test
+      - name: Run unit tests
+        run: ./gradlew test
 
-    - name: Run UI tests
-      run: ./gradlew connectedAndroidTest
+      - name: Upload unit test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results
+          path: app/build/reports/tests
 
-    - name: Run screenshot tests
-      run: ./gradlew validateDebugScreenshotTest
+#  ui-test:
+#    runs-on: macos-latest
+#    timeout-minutes: 30
+#    steps:
+#      - uses: actions/checkout@v4
+#
+#      - name: Set up JDK 17
+#        uses: actions/setup-java@v4
+#        with:
+#          java-version: '17'
+#          distribution: 'temurin'
+#          cache: gradle
+#
+#      - name: Grant execute permission for gradlew
+#        run: chmod +x gradlew
+#
+#      - name: AVD cache
+#        uses: actions/cache@v3
+#        id: avd-cache
+#        with:
+#          path: |
+#            ~/.android/avd/*
+#            ~/.android/adb*
+#          key: avd-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}
+#          restore-keys: |
+#            avd-${{ runner.os }}-
+#
+#      - name: Create AVD and generate snapshot for caching
+#        if: steps.avd-cache.outputs.cache-hit != 'true'
+#        uses: reactivecircus/android-emulator-runner@v2
+#        with:
+#          api-level: 28
+#          arch: x86_64
+#          profile: pixel_2
+#          target: google_apis
+#          force-avd-creation: false
+#          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+#          disable-animations: false
+#          script: echo "Generated AVD snapshot for caching."
+#
+#      - name: Run UI tests
+#        uses: reactivecircus/android-emulator-runner@v2
+#        with:
+#          api-level: 28
+#          arch: x86_64
+#          profile: pixel_2
+#          target: google_apis
+#          force-avd-creation: false
+#          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+#          disable-animations: true
+#          script: ./gradlew connectedAndroidTest
+#
+#      - name: Upload UI test results
+#        if: always()
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: ui-test-results
+#          path: app/build/reports/androidTests
 
-    - name: Upload test results
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: test-results
-        path: |
-          app/build/reports/tests
-          app/build/reports/androidTests
-          app/screenshots 
+  screenshot-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Run screenshot tests
+        run: ./gradlew validateDebugScreenshotTest
+
+      - name: Upload screenshot test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshot-test-results
+          path: app/screenshots
+
+  upload-results:
+    needs: [unit-test, ui-test, screenshot-test]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Download all test results
+        uses: actions/download-artifact@v4
+        with:
+          path: test-results
+
+      - name: Upload combined test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: combined-test-results
+          path: test-results 

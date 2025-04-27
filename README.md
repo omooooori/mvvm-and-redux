@@ -1,4 +1,4 @@
-# MVVM and Redux Todo App
+# Composable Todo App
 
 このアプリは、MVVMアーキテクチャとReduxパターンを組み合わせたTodoアプリケーションです。
 
